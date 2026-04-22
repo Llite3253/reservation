@@ -8,7 +8,8 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 public interface PerformanceRepository extends JpaRepository<Performance, Long> {
-    //@Lock(LockModeType.PESSIMISTIC_WRITE)
+//    @Lock(LockModeType.PESSIMISTIC_WRITE)
+//    @Query("SELECT p FROM Performance p WHERE p.id = :id")
     @Query(value = "SELECT * FROM Performance WHERE id = :id FOR UPDATE", nativeQuery = true)
     Performance findByIdWithPessimisticLock(@Param("id") Long id);
 }

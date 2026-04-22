@@ -37,7 +37,7 @@ class ReservationServiceTest {
                 .startAt(LocalDateTime.now()) // 테스트용
                 .reservationStartAt(LocalDateTime.now()) // 테스트용
                 .price(1000)
-                .totalSeats(1000)
+                .totalSeats(10) // 좌석 수
                 .status(PerformanceStatus.OPEN)
                 .build());
 
@@ -65,10 +65,11 @@ class ReservationServiceTest {
         Performance updatedPerformance = performanceRepository.findById(performanceId).orElseThrow();
         long reservationCount = reservationRepository.count();
 
+        System.out.println("총 예매 시도 인원: " + threadCount + " 명");
         System.out.println("남은 좌석 수: " + updatedPerformance.getTotalSeats());
         System.out.println("실제 생성된 예매 내역 수: " + reservationCount);
 
-        assertThat(reservationCount).isEqualTo(100);
-        assertThat(updatedPerformance.getTotalSeats()).isEqualTo(900);
+        assertThat(reservationCount).isEqualTo(10);
+        assertThat(updatedPerformance.getTotalSeats()).isEqualTo(0);
     }
 }
