@@ -1,7 +1,9 @@
 package com.llite.reservation;
 
 import com.llite.reservation.Entity.Performance;
-import com.llite.reservation.Enum.PerformanceStatus;import com.llite.reservation.Repository.PerformanceRepository;
+import com.llite.reservation.Enum.PerformanceStatus;
+import com.llite.reservation.Facade.ReservationLockFacade;
+import com.llite.reservation.Repository.PerformanceRepository;
 import com.llite.reservation.Repository.ReservationRepository;
 import com.llite.reservation.Service.ReservationService;
 import org.junit.jupiter.api.DisplayName;
@@ -27,6 +29,9 @@ class ReservationServiceTest {
     @Autowired
     private ReservationRepository reservationRepository;
 
+    @Autowired
+    private ReservationLockFacade reservationLockFacade;
+
     @Test
     @DisplayName("100명이 동시에 예매를 시도")
     void concurrent_reservation_test() throws InterruptedException {
@@ -37,13 +42,13 @@ class ReservationServiceTest {
                 .startAt(LocalDateTime.now()) // 테스트용
                 .reservationStartAt(LocalDateTime.now()) // 테스트용
                 .price(1000)
-                .totalSeats(10) // 좌석 수
+                .totalSeats(1000) // 좌석 수
                 .status(PerformanceStatus.OPEN)
                 .build());
 
         Long performanceId = performance.getId();
 
-        int threadCount = 100;
+        int threadCount = 100000;
         ExecutorService executorService = Executors.newFixedThreadPool(32);
         CountDownLatch latch = new CountDownLatch(threadCount);
 
@@ -51,9 +56,10 @@ class ReservationServiceTest {
             long userId = i;
             executorService.submit(() -> {
                 try {
-                    reservationService.reserveSeat(performanceId, userId);
+                    //reservationService.reserveSeat(performanceId, userId);
+                    reservationLockFacade.reserveSeatWithRedisLock(performanceId, userId);
                 } catch (Exception e) {
-                    System.out.println("예외 발생: " + e.getMessage());
+                    //System.out.println("예외 발생: " + e.getMessage());
                 } finally {
                     latch.countDown();
                 }
@@ -69,7 +75,7 @@ class ReservationServiceTest {
         System.out.println("남은 좌석 수: " + updatedPerformance.getTotalSeats());
         System.out.println("실제 생성된 예매 내역 수: " + reservationCount);
 
-        assertThat(reservationCount).isEqualTo(10);
+        assertThat(reservationCount).isEqualTo(1000);
         assertThat(updatedPerformance.getTotalSeats()).isEqualTo(0);
     }
 }
