@@ -17,13 +17,13 @@ public class ReservationService {
 
     @Transactional
     public void reserveSeat(Long performanceId, Long userId) {
-        Performance performance = performanceRepository.findByIdWithPessimisticLock(performanceId);
+//        Performance performance = performanceRepository.findByIdWithPessimisticLock(performanceId);
+//
+//        if(performance == null) {
+//            throw new IllegalArgumentException("존재하지 않는 공연입니다.");
+//        }
 
-        if(performance == null) {
-            throw new IllegalArgumentException("존재하지 않는 공연입니다.");
-        }
-
-        //Performance performance = performanceRepository.findById(performanceId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공연입니다."));
+        Performance performance = performanceRepository.findById(performanceId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공연입니다."));
 
         if(performance.getStatus() != PerformanceStatus.OPEN) {
             throw new IllegalArgumentException("현재 예매 가능한 상태가 아닙니다.");
